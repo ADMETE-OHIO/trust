@@ -197,6 +197,7 @@ def start():
     # temperature down, and increase to adjust up
     factor = 2.25
     first=True
+    lie=False
     cpu_temps = [get_cpu_temperature()] * 5
 
     delay = 0.5  # Debounce the proximity tap
@@ -311,6 +312,9 @@ def start():
                 avg_cpu_temp = sum(cpu_temps) / float(len(cpu_temps))
                 raw_temp = bme280.get_temperature()
                 raw_data = raw_temp - ((avg_cpu_temp - raw_temp) / factor)
+                if lie:
+                    raw_data = 100
+                    print("Activating sprinkler system!")
                 save_data(0, raw_data)
                 display_everything()
                 raw_data = bme280.get_pressure()
@@ -320,6 +324,8 @@ def start():
                 save_data(2, raw_data)
                 if proximity < 10:
                     raw_data = ltr559.get_lux()
+                    if raw_data > 400:
+                        lie = True
                 else:
                     raw_data = 1
                     if first==True:
